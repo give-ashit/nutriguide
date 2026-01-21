@@ -1,191 +1,233 @@
-import React from 'react';
-import { useDiary } from '../../hooks/useDiary';
-import { useHydration } from '../../hooks/useHydration';
+import React, { useState, useMemo } from 'react';
 
-const Diary: React.FC = () => {
-  const {
-    currentDate,
-    meals,
-    loading,
-    dailySummary,
-    changeDate,
-    goToToday,
-    addItem,
-    removeItem,
-    formatDate,
-    isToday
-  } = useDiary();
-
-  const {
-    glasses: waterIntake,
-    goal: maxWater,
-    handleGlassClick
-  } = useHydration(currentDate);
-
-  const calorieGoal = 2000;
-  const remaining = Math.max(0, calorieGoal - dailySummary.totalCalories);
-
-  const handleAddItem = async (sectionId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    // Add a quick item
-    await addItem(sectionId, {
-      name: 'Quick Added Item',
-      calories: 150,
-      description: '1 serving • 150 kcal',
-      image_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAbE_DuzwX93iKWQfaPNI1TUwPLMpNE5SYB_aheE1OPKHxIADku1mwcWYsvTio3AIYOwT4-G9DcCg4B80CYZ_e5nQcmYC1j9Y-1KwxzifJ6v2SksFmtx9I74aivf6eK8bKpO3ueCiFtj6fa5QPE_hsUrp_xgaou6HAWjh0eNF0_Fi-YWo_LQWZt0Q5H40-AywBVnDEEe8joFz_ms4gBiDoBCNkFiJdn3SUNdIXAcy81MESEY4ksafMeZEGFHlazitqO38wTDRnERiHH'
-    });
-  };
-
-  const handleRemoveItem = async (sectionId: string, itemId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    await removeItem(sectionId, itemId);
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+// --- Mock Data ---
+const INITIAL_RECIPES = [
+  {
+    id: 1,
+    title: "Grilled Salmon Bowl",
+    calories: 520,
+    time: "20 mins",
+    description: "Fresh salmon fillet with quinoa, avocado, and mixed greens.",
+    image: "https://images.unsplash.com/photo-1467003909585-2f8a7270028d?auto=format&fit=crop&w=800&q=80",
+    tags: [
+      { label: "High Protein", color: "green" },
+      { label: "Omega-3", color: "orange" }
+    ],
+    isLiked: false
+  },
+  {
+    id: 2,
+    title: "Sweet Potato Buddha Bowl",
+    calories: 480,
+    time: "35 mins",
+    description: "Roasted sweet potatoes with chickpeas, kale, and tahini dressing.",
+    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
+    tags: [
+      { label: "Vegan", color: "green" }
+    ],
+    isLiked: false
+  },
+  {
+    id: 3,
+    title: "Avocado Toast & Eggs",
+    calories: 350,
+    time: "15 mins",
+    description: "Creamy avocado on sourdough toast topped with poached eggs.",
+    image: "https://images.unsplash.com/photo-1525351484163-7529414395d8?auto=format&fit=crop&w=800&q=80",
+    tags: [
+      { label: "Quick Meal", color: "yellow" }
+    ],
+    isLiked: true
+  },
+  {
+    id: 4,
+    title: "Quinoa Salad with Chickpeas",
+    calories: 420,
+    time: "25 mins",
+    description: "A refreshing salad packed with plant-based protein and fiber.",
+    image: "https://images.unsplash.com/photo-1505576399279-565b52d4ac71?auto=format&fit=crop&w=800&q=80",
+    tags: [
+      { label: "Low Carb", color: "blue" }
+    ],
+    isLiked: false
   }
+];
+
+const CATEGORIES = ["All", "Low Carb", "High Protein", "Vegan", "Quick Meal", "Breakfast"];
+
+// --- Helper Component: Tag Badge ---
+const TagBadge = ({ label, color }: { label: string, color: string }) => {
+  const styles: {[key: string]: string} = {
+    green: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
+    orange: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300",
+    yellow: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300",
+    blue: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300",
+  };
 
   return (
-    <div className="pb-24 pt-4">
-      <header className="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md -mx-0 px-4 mb-4">
-        <div className="flex items-center justify-between p-2">
-          <button
-            onClick={() => changeDate(-1)}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors active:scale-95"
-          >
-            <span className="material-symbols-outlined">chevron_left</span>
-          </button>
-          <div className="flex flex-col items-center cursor-pointer" onClick={goToToday}>
-            <h2 className="text-lg font-bold leading-tight text-slate-900 dark:text-white">
-              {isToday ? "Today" : currentDate.toLocaleDateString('en-US', { weekday: 'long' })}
-            </h2>
-            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-widest">{formatDate(currentDate)}</span>
-          </div>
-          <button
-            onClick={() => changeDate(1)}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors active:scale-95"
-          >
-            <span className="material-symbols-outlined">chevron_right</span>
-          </button>
-        </div>
-      </header>
+    <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide ${styles[color] || styles.green}`}>
+      {label}
+    </span>
+  );
+};
 
-      <main className="px-4 space-y-6">
-        {/* Calories Card */}
-        <section onClick={() => alert("Viewing detailed analysis")} className="cursor-pointer active:scale-[0.99] transition-transform">
-          <div className="bg-primary/10 dark:bg-primary/5 rounded-xl p-6 border border-primary/20">
-            <div className="flex justify-between items-end mb-4">
-              <div>
-                <p className="text-sm font-semibold text-primary uppercase tracking-wide">Calories Remaining</p>
-                <h1 className="text-5xl font-extrabold tracking-tight mt-1 text-slate-900 dark:text-white">{remaining.toLocaleString()}</h1>
-              </div>
-              <div className="text-right">
-                <span className="material-symbols-outlined text-primary text-3xl">insights</span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              <div className="flex justify-between items-center text-sm font-medium text-slate-900 dark:text-white">
-                <div className="flex gap-4">
-                  <span><span className="text-gray-500 font-normal">Goal</span> {calorieGoal.toLocaleString()}</span>
-                  <span><span className="text-gray-500 font-normal">Food</span> {dailySummary.totalCalories.toLocaleString()}</span>
-                </div>
-                <span><span className="text-gray-500 font-normal">Protein</span> {dailySummary.totalProtein.toFixed(0)}g</span>
-              </div>
-              <div className="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(100, (dailySummary.totalCalories / calorieGoal) * 100)}%` }}
-                ></div>
-              </div>
-            </div>
-          </div>
-        </section>
+// --- Main Component ---
+const Diary: React.FC = () => {
+  const [recipes, setRecipes] = useState(INITIAL_RECIPES);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [showFilters, setShowFilters] = useState(false);
 
-        {/* Hydration */}
-        <section>
-          <div className="bg-blue-50 dark:bg-blue-900/10 rounded-xl p-4 border border-blue-100 dark:border-blue-900/30">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-water">water_drop</span>
-                <h3 className="font-bold text-lg text-slate-900 dark:text-white">Hydration</h3>
-              </div>
-              <span className="text-sm font-bold text-water">{waterIntake}/{maxWater} glasses</span>
-            </div>
-            <div className="flex justify-between items-center gap-2">
-              {[...Array(maxWater)].map((_, i) => {
-                const isFilled = i < waterIntake;
-                return (
-                  <button
-                    key={i}
-                    onClick={() => handleGlassClick(i)}
-                    className={`flex-1 aspect-[3/4] rounded-lg flex items-center justify-center transition-all duration-200 active:scale-90 ${isFilled ? 'bg-water text-white shadow-sm hover:bg-water/90' : 'border-2 border-dashed border-water/40 text-water/40 hover:bg-white/50'}`}
-                  >
-                    <span className={`material-symbols-outlined text-[20px] ${isFilled ? 'fill' : ''}`}>local_drink</span>
-                  </button>
-                );
-              })}
+  // Filter Logic
+  const filteredRecipes = useMemo(() => {
+    return recipes.filter(recipe => {
+      const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            recipe.description.toLowerCase().includes(searchQuery.toLowerCase());
+     
+      const matchesCategory = activeCategory === "All" ||
+                              recipe.tags.some(t => t.label === activeCategory) ||
+                              (activeCategory === "Low Carb" && recipe.tags.some(t => t.label === "Low Carb")) ||
+                              (activeCategory === "High Protein" && recipe.tags.some(t => t.label === "High Protein")) ||
+                              (activeCategory === "Vegan" && recipe.tags.some(t => t.label === "Vegan"));
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [recipes, searchQuery, activeCategory]);
+
+  // Toggle Like Logic
+  const toggleLike = (id: number) => {
+    setRecipes(prev => prev.map(recipe =>
+      recipe.id === id ? { ...recipe, isLiked: !recipe.isLiked } : recipe
+    ));
+  };
+
+  const handleOpenRecipe = (title: string) => {
+      // Placeholder for future internet functionality
+      alert(`Opening ${title} details...`);
+  };
+
+  return (
+    <div className="bg-[#edf7f4] dark:bg-[#1f2e29] font-['Manrope'] text-[#121616] dark:text-white transition-colors duration-300 min-h-full">
+     
+      <div className="relative w-full mx-auto flex flex-col">
+       
+        {/* Header Section */}
+        <header className="sticky top-0 z-30 bg-[#edf7f4]/95 dark:bg-[#1f2e29]/95 backdrop-blur-md px-6 pt-6 pb-4 border-b border-black/5 dark:border-white/5 transition-colors duration-200">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold tracking-tight">Healthy Recipes</h1>
+            <div className="flex gap-2">
+              <button className="size-10 rounded-full bg-white dark:bg-white/10 flex items-center justify-center shadow-sm hover:scale-105 transition-transform active:scale-95">
+                <span className="material-symbols-outlined text-xl">favorite</span>
+              </button>
+              <button 
+                onClick={() => setShowFilters(!showFilters)}
+                className={`size-10 rounded-full flex items-center justify-center shadow-sm hover:scale-105 transition-all active:scale-95 ${showFilters ? 'bg-primary text-white' : 'bg-white dark:bg-white/10'}`}
+              >
+                <span className="material-symbols-outlined text-xl">filter_list</span>
+              </button>
             </div>
           </div>
-        </section>
 
-        {/* Meal Sections */}
-        <section className="flex flex-col gap-6">
-          {meals.map((section) => (
-            <div key={section.id} className="bg-gray-50 dark:bg-gray-800/40 rounded-xl p-1 overflow-hidden">
-              <div className="flex items-center justify-between p-3">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-bold leading-tight text-slate-900 dark:text-white">{section.title}</h2>
-                  <span className="text-sm font-medium text-gray-400">• {section.kcal} kcal</span>
-                </div>
+          {/* Search Bar */}
+          <div className="relative mb-2">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+              <span className="material-symbols-outlined">search</span>
+            </span>
+            <input
+              className="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-white/5 border-none shadow-sm placeholder-gray-400 focus:ring-2 focus:ring-[#4d7f80] focus:outline-none text-sm transition-all text-slate-900 dark:text-white"
+              placeholder="Search recipes, ingredients..."
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {/* Categories (Horizontal Scroll) - Conditional Rendering */}
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showFilters ? 'max-h-16 opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
+            <div className="overflow-x-auto no-scrollbar flex gap-3 pb-2 scroll-smooth">
+                {CATEGORIES.map(category => (
                 <button
-                  onClick={(e) => handleAddItem(section.id, e)}
-                  className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-sm hover:bg-primary/90 active:scale-90 transition cursor-pointer"
+                    key={category}
+                    onClick={() => setActiveCategory(category)}
+                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border
+                    ${activeCategory === category
+                        ? 'bg-[#4d7f80] text-white shadow-md shadow-[#4d7f80]/30 border-transparent'
+                        : 'bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 border-black/5 hover:bg-gray-50 dark:hover:bg-white/10'
+                    }`}
                 >
-                  <span className="material-symbols-outlined text-xl">add</span>
+                    {category}
                 </button>
-              </div>
-
-              {section.items.length > 0 ? (
-                <div className="flex flex-col bg-white dark:bg-background-dark rounded-lg overflow-hidden">
-                  {section.items.map((item) => (
-                    <div key={item.id} className="flex items-center gap-4 px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-white/5 transition group cursor-pointer" onClick={() => alert(`Edit ${item.name}`)}>
-                      <div className="w-12 h-12 rounded-lg bg-cover bg-center shrink-0" style={{ backgroundImage: `url('${item.img}')` }}></div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold leading-tight text-slate-900 dark:text-white truncate">{item.name}</p>
-                        <p className="text-xs text-gray-500 font-medium truncate">{item.desc}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-bold text-slate-900 dark:text-white">{item.kcal}</span>
-                        <button
-                          onClick={(e) => handleRemoveItem(section.id, item.id, e)}
-                          className="size-8 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                          title="Remove item"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">close</span>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="bg-white dark:bg-background-dark rounded-lg p-6 flex flex-col items-center justify-center text-center">
-                  {section.id === 'dinner' && (
-                    <span className="material-symbols-outlined text-gray-300 dark:text-gray-700 text-4xl mb-2">dinner_dining</span>
-                  )}
-                  <p className="text-sm text-gray-500 font-medium">
-                    {section.id === 'dinner' ? 'No food logged yet' : 'Fuel up when needed'}
-                  </p>
-                </div>
-              )}
+                ))}
             </div>
-          ))}
-        </section>
-      </main>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 px-6 pb-6 pt-4">
+          <div className="grid grid-cols-1 gap-6">
+           
+            {filteredRecipes.length > 0 ? (
+              filteredRecipes.map(recipe => (
+                <div key={recipe.id} className="group relative bg-white dark:bg-white/5 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-black/5 dark:border-white/5">
+                  {/* Image Container */}
+                  <div
+                    className="h-48 w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                    style={{ backgroundImage: `url("${recipe.image}")` }}
+                  >
+                    {/* Like Button */}
+                    <div className="absolute top-3 right-3 z-10">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleLike(recipe.id);
+                        }}
+                        className={`size-8 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm transition-colors active:scale-90 ${recipe.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                      >
+                        <span className={`material-symbols-outlined text-lg ${recipe.isLiked ? 'fill' : ''}`}>favorite</span>
+                      </button>
+                    </div>
+                    {/* Time Badge */}
+                    <div className="absolute bottom-3 left-3 flex gap-2">
+                      <span className="px-2 py-1 rounded-lg bg-black/60 backdrop-blur-md text-white text-xs font-medium flex items-center gap-1">
+                        <span className="material-symbols-outlined text-xs">schedule</span> {recipe.time}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-4 relative bg-white dark:bg-background-dark/50">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-bold text-lg leading-tight text-slate-900 dark:text-white">{recipe.title}</h3>
+                      <span className="flex-shrink-0 text-sm font-bold text-[#4d7f80]">{recipe.calories} kcal</span>
+                    </div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{recipe.description}</p>
+                   
+                    <div className="mt-4 flex items-center justify-between">
+                      <div className="flex -space-x-0 gap-2">
+                        {recipe.tags.map((tag, idx) => (
+                          <TagBadge key={idx} label={tag.label} color={tag.color} />
+                        ))}
+                      </div>
+                      <button 
+                        onClick={() => handleOpenRecipe(recipe.title)}
+                        className="text-[#4d7f80] hover:bg-[#4d7f80]/10 p-1 rounded-lg transition-colors active:scale-95"
+                      >
+                        <span className="material-symbols-outlined">arrow_forward</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-10 text-gray-400">
+                <span className="material-symbols-outlined text-4xl mb-2">soup_kitchen</span>
+                <p>No recipes found.</p>
+              </div>
+            )}
+
+          </div>
+        </main>
+      </div>
     </div>
   );
 };

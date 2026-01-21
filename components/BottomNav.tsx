@@ -24,7 +24,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentView, onViewChange }) => {
              {/* Floating FAB */}
             <button 
                 className="absolute -top-6 left-1/2 -translate-x-1/2 size-14 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center border-4 border-background-light dark:border-background-dark hover:scale-105 transition-transform duration-200 z-10 active:scale-95"
-                onClick={() => onViewChange('diary')} 
+                onClick={() => onViewChange('scanner')} 
             >
                 <span className="material-symbols-outlined text-[28px]">qr_code_scanner</span>
             </button>

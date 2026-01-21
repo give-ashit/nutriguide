@@ -5,7 +5,8 @@ export type ViewState =
   | 'dashboard' 
   | 'weekly' 
   | 'diary' 
-  | 'profile';
+  | 'profile'
+  | 'scanner';
 
 export interface UserProfile {
   name: string;
@@ -15,6 +16,7 @@ export interface UserProfile {
   gender: 'male' | 'female';
   goal: 'lose' | 'maintain' | 'gain';
   activityLevel: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active';
+  avatar?: string;
 }
 
 export const INITIAL_USER: UserProfile = {
