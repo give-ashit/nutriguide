@@ -1,0 +1,5 @@
+{
+  "name": "NutriGuide",
+  "description": "A personalized nutrition and diet planning application featuring meal tracking, goal setting, and daily recommendations.",
+  "requestFramePermissions": []
+}
