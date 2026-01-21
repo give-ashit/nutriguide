@@ -23,6 +23,72 @@ export async function createUser(userData: UserInsert): Promise<User | null> {
 }
 
 /**
+ * Register a new user with email and password
+ */
+export async function registerUser(
+    email: string,
+    password: string,
+    name: string
+): Promise<{ user: User | null; error: string | null }> {
+    // Check if email already exists
+    const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email)
+        .single();
+
+    if (existingUser) {
+        return { user: null, error: 'Email already registered' };
+    }
+
+    // Create user with default values (will be updated in setup flow)
+    const { data, error } = await supabase
+        .from('users')
+        .insert({
+            name,
+            email,
+            password_hash: password, // Note: In production, hash this!
+            weight: 70,
+            height: 170,
+            age: 25,
+            gender: 'male' as const,
+            goal: 'maintain' as const,
+            activity_level: 'lightly_active' as const,
+            calorie_goal: 2000
+        })
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error registering user:', error);
+        return { user: null, error: error.message };
+    }
+
+    return { user: data, error: null };
+}
+
+/**
+ * Login user with email and password
+ */
+export async function loginUser(
+    email: string,
+    password: string
+): Promise<{ user: User | null; error: string | null }> {
+    const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .eq('password_hash', password) // Note: In production, compare hashed passwords!
+        .single();
+
+    if (error || !data) {
+        return { user: null, error: 'Invalid email or password' };
+    }
+
+    return { user: data, error: null };
+}
+
+/**
  * Get user by ID
  */
 export async function getUser(userId: string): Promise<User | null> {

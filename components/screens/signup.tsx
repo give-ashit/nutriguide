@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { registerUser } from '../../services/userService';
+import { setCurrentUserId } from '../../lib/supabase';
 
 // 注意：请确保您的 index.html 或环境中已引入 Material Symbols 和 Manrope 字体
 // <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet" />
@@ -6,13 +8,16 @@ import React, { useState } from 'react';
 
 interface SignUpProps {
   onLogin: () => void;
+  onSignUpSuccess?: () => void;
 }
 
-const NutriGuideSignUp: React.FC<SignUpProps> = ({ onLogin }) => {
+const NutriGuideSignUp: React.FC<SignUpProps> = ({ onLogin, onSignUpSuccess }) => {
   // --- 状态管理 ---
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
- 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -27,21 +32,55 @@ const NutriGuideSignUp: React.FC<SignUpProps> = ({ onLogin }) => {
       ...prev,
       [name]: value
     }));
+    setError(null);
   };
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-   
+    setError(null);
+
     // 简单的密码匹配验证
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      setError("Passwords do not match!");
       return;
     }
 
-    console.log("Sign Up Data:", formData);
-    // TODO: 在这里调用您的注册 API
-    // 注册成功后，通常导航到登录或直接进入应用，这里示例跳回登录
-    onLogin();
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { user, error: regError } = await registerUser(
+        formData.email,
+        formData.password,
+        formData.fullName
+      );
+
+      if (regError) {
+        setError(regError);
+        setLoading(false);
+        return;
+      }
+
+      if (user) {
+        // 保存用户ID到localStorage
+        setCurrentUserId(user.id);
+        // 注册成功，跳转到设置页面或仪表板
+        if (onSignUpSuccess) {
+          onSignUpSuccess();
+        } else {
+          onLogin();
+        }
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+      console.error('Signup error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleBack = () => {
@@ -59,7 +98,7 @@ const NutriGuideSignUp: React.FC<SignUpProps> = ({ onLogin }) => {
 
   return (
     <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#f6f7f7] dark:bg-[#161b1c] font-sans antialiased text-gray-900 dark:text-gray-100">
-     
+
       {/* 顶部背景区域 (高度设为 40% 以匹配设计) */}
       <div className="absolute inset-x-0 top-0 h-[40%] z-0">
         <div
@@ -83,7 +122,7 @@ const NutriGuideSignUp: React.FC<SignUpProps> = ({ onLogin }) => {
       {/* 主卡片内容区 */}
       <div className="relative z-10 flex h-full flex-col justify-end">
         <div className="w-full rounded-t-[2.5rem] bg-white px-8 pb-10 pt-8 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] dark:bg-gray-900 safe-area-inset-bottom">
-         
+
           {/* 标题 */}
           <div className="mb-6 text-center">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Create Account</h2>
@@ -92,7 +131,7 @@ const NutriGuideSignUp: React.FC<SignUpProps> = ({ onLogin }) => {
 
           {/* 注册表单 */}
           <form onSubmit={handleSignUp} className="flex flex-col gap-4">
-           
+
             {/* 姓名输入 */}
             <div className="group relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
@@ -179,12 +218,20 @@ const NutriGuideSignUp: React.FC<SignUpProps> = ({ onLogin }) => {
               </div>
             </div>
 
+            {/* 错误提示 */}
+            {error && (
+              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                {error}
+              </div>
+            )}
+
             {/* 注册按钮 */}
             <button
               type="submit"
-              className="mt-2 flex w-full items-center justify-center rounded-xl bg-[#4c7d7e] py-4 text-lg font-bold text-white shadow-lg shadow-[#4c7d7e]/25 transition-all hover:bg-[#4c7d7e]/90 hover:shadow-xl active:scale-[0.98]"
+              disabled={loading}
+              className="mt-2 flex w-full items-center justify-center rounded-xl bg-[#4c7d7e] py-4 text-lg font-bold text-white shadow-lg shadow-[#4c7d7e]/25 transition-all hover:bg-[#4c7d7e]/90 hover:shadow-xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign Up
+              {loading ? 'Creating Account...' : 'Sign Up'}
             </button>
           </form>
 

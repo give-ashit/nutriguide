@@ -13,6 +13,9 @@ export interface Database {
                 Row: {
                     id: string;
                     name: string;
+                    email: string | null;
+                    password_hash: string | null;
+                    avatar: string | null;
                     weight: number;
                     height: number;
                     age: number;
@@ -26,6 +29,9 @@ export interface Database {
                 Insert: {
                     id?: string;
                     name: string;
+                    email?: string | null;
+                    password_hash?: string | null;
+                    avatar?: string | null;
                     weight: number;
                     height: number;
                     age: number;
@@ -39,6 +45,9 @@ export interface Database {
                 Update: {
                     id?: string;
                     name?: string;
+                    email?: string | null;
+                    password_hash?: string | null;
+                    avatar?: string | null;
                     weight?: number;
                     height?: number;
                     age?: number;
