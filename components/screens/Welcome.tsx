@@ -1,65 +1,194 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+// 如果您的环境中没有在 index.html 引入 Material Symbols，
+// 您可能需要通过 CDN 引入，或者确保您的环境已预装该字体。
+// <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined..." rel="stylesheet" />
 
 interface WelcomeProps {
   onStart: () => void;
+  onSignUp: () => void;
 }
 
-const Welcome: React.FC<WelcomeProps> = ({ onStart }) => {
+const NutriGuideLogin: React.FC<WelcomeProps> = ({ onStart, onSignUp }) => {
+  // --- 状态管理 ---
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+
+  // --- 事件处理 ---
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Logging in with:", formData);
+    // 这里可以添加您的实际登录 API 调用逻辑
+    onStart();
+  };
+
+  const handleBack = () => {
+    console.log("Back button clicked");
+  };
+
+  // --- 样式配置 ---
+  // 使用内联样式处理复杂的遮罩效果，因为 Tailwind 的 mask 插件可能未预装
+  const bgImageStyle = {
+    backgroundImage: "url('https://images.unsplash.com/photo-1543339308-43e59d6b73a6?q=80&w=2070&auto=format&fit=crop')", // 替换为类似设计图的绿色健康餐图片
+    maskImage: "linear-gradient(to bottom, black 70%, transparent 100%)",
+    WebkitMaskImage: "linear-gradient(to bottom, black 70%, transparent 100%)"
+  };
+
   return (
-    <div className="relative flex h-screen w-full flex-col overflow-hidden">
-      {/* Background Image with Gradient Overlay */}
-      <div className="absolute inset-0 z-0">
-        <div 
-            className="h-full w-full bg-cover bg-center bg-no-repeat transition-transform duration-[20s] hover:scale-105" 
-            style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuD8eRkPlT9vyVBV4XIAiIwjn8dgf_ALrIMQsVPAvq5eeL-MqqgjjJEN83uk_FMm9eotVQV9wr2HmrJXCqSIfhRzaFh4Smp1XFHZNZ3CdHrbawVvlJnbjrT-Yzc4xuGdNpqSpO4wkUjFJwGTt9Rx7beNGWdZYqqeRrRbxxyQBhdh-0szmfmo0K2TfaZiOfUBlZmIfVXJ1eK2cHPhCHmwmDyDGNG7EUGNnk-lz96xkd_Jdwk6hsngJMevEyP8Ex5DwAiCBtEpbq1x046f')" }}
+    // 外层容器：模拟移动端全屏
+    <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#f6f7f7] dark:bg-[#161b1c] font-sans antialiased text-gray-900 dark:text-gray-100">
+     
+      {/* 顶部背景区域 */}
+      <div className="absolute inset-x-0 top-0 h-[45%] z-0">
+        <div
+          className="h-full w-full bg-cover bg-center bg-no-repeat opacity-90 transition-opacity duration-500"
+          style={bgImageStyle}
+          aria-label="Soft illustration of a healthy meal bowl"
         ></div>
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-white/60 to-background-light dark:from-black/30 dark:via-black/60 dark:to-background-dark"></div>
-        {/* Tint */}
-        <div className="absolute inset-0 bg-primary/10 mix-blend-multiply"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#4c7d7e]/10 via-transparent to-[#f6f7f7] dark:to-[#161b1c]"></div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="relative z-10 flex h-full flex-col justify-between px-6 pb-12 pt-16">
-        {/* Top Section */}
-        <div className="flex flex-col items-center justify-start pt-12 animate-fade-in-down">
-          <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-white/90 shadow-xl ring-1 ring-primary/10 backdrop-blur-sm dark:bg-background-dark/90 dark:ring-white/10">
-            <span className="material-symbols-outlined text-5xl text-primary">eco</span>
-          </div>
-          <div className="text-center">
-            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
-              NutriGuide
-            </h1>
-            <div className="mx-auto mt-3 h-1 w-12 rounded-full bg-secondary"></div>
-            <p className="mt-4 max-w-xs text-center text-lg font-medium text-gray-600 dark:text-gray-300">
-              Personalized nutrition <br className="hidden sm:block" />for a better you
-            </p>
-          </div>
-        </div>
+      {/* 顶部导航栏 (返回按钮) */}
+      <div className="absolute top-0 left-0 z-20 w-full p-6 pt-12 safe-area-inset-top">
+        <button
+          onClick={handleBack}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 shadow-sm backdrop-blur-sm transition-transform hover:scale-105 active:scale-95 dark:bg-black/50 text-gray-700 dark:text-white"
+          aria-label="Go back"
+        >
+          <span className="material-symbols-outlined">arrow_back</span>
+        </button>
+      </div>
 
-        {/* Bottom Section */}
-        <div className="flex w-full flex-col gap-4 animate-fade-in-up delay-200">
-          <button 
-            onClick={onStart}
-            className="group relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-primary px-6 py-4 text-lg font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-xl active:scale-[0.98]"
-          >
-            <span className="relative flex items-center gap-2">
-              Get Started
-              <span className="material-symbols-outlined text-xl transition-transform group-hover:translate-x-1">arrow_forward</span>
-            </span>
-          </button>
-          
-          <button className="flex w-full items-center justify-center rounded-xl border-2 border-primary/20 bg-white/50 px-6 py-4 text-lg font-bold text-primary backdrop-blur-sm transition-colors hover:border-primary hover:bg-white/80 dark:border-white/10 dark:bg-black/20 dark:text-white dark:hover:bg-black/40 active:scale-[0.98]">
-            Log In
-          </button>
-          
-          <p className="mt-4 text-center text-xs text-gray-500 dark:text-gray-400">
-            By continuing, you agree to our <a href="#" className="underline decoration-secondary underline-offset-2 hover:text-primary">Terms</a> & <a href="#" className="underline decoration-secondary underline-offset-2 hover:text-primary">Privacy Policy</a>
-          </p>
+      {/* 主要内容区域 (白色卡片) */}
+      <div className="relative z-10 flex h-full flex-col justify-end">
+        <div className="w-full rounded-t-[2.5rem] bg-white px-8 pb-10 pt-10 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] dark:bg-gray-900 safe-area-inset-bottom">
+         
+          {/* 标题 */}
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h2>
+            <p className="mt-2 text-gray-500 dark:text-gray-400">Log in to track your healthy journey</p>
+          </div>
+
+          {/* 登录表单 */}
+          <form onSubmit={handleLogin} className="flex flex-col gap-5">
+            {/* 邮箱输入 */}
+            <div className="group relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                <span className="material-symbols-outlined text-gray-400 group-focus-within:text-[#4c7d7e]">mail</span>
+              </div>
+              <input
+                name="email"
+                type="email"
+                required
+                value={formData.email}
+                onChange={handleInputChange}
+                className="block w-full rounded-xl border-0 bg-gray-50 py-4 pl-12 pr-4 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#4c7d7e] dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500 outline-none transition-shadow"
+                placeholder="Email address"
+              />
+            </div>
+
+            {/* 密码输入 */}
+            <div className="group relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                <span className="material-symbols-outlined text-gray-400 group-focus-within:text-[#4c7d7e]">lock</span>
+              </div>
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                required
+                value={formData.password}
+                onChange={handleInputChange}
+                className="block w-full rounded-xl border-0 bg-gray-50 py-4 pl-12 pr-12 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#4c7d7e] dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500 outline-none transition-shadow"
+                placeholder="Password"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-4">
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
+                >
+                  <span className="material-symbols-outlined text-[20px]">
+                    {showPassword ? 'visibility' : 'visibility_off'}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* 忘记密码 */}
+            <div className="flex justify-end">
+              <a href="#" className="text-sm font-medium text-[#4c7d7e] hover:text-[#4c7d7e]/80 hover:underline">
+                Forgot Password?
+              </a>
+            </div>
+
+            {/* 登录按钮 */}
+            <button
+              type="submit"
+              className="mt-2 flex w-full items-center justify-center rounded-xl bg-[#4c7d7e] py-4 text-lg font-bold text-white shadow-lg shadow-[#4c7d7e]/25 transition-all hover:bg-[#4c7d7e]/90 hover:shadow-xl active:scale-[0.98]"
+            >
+              Log In
+            </button>
+          </form>
+
+            {/* 分割线 */}
+            <div className="relative my-8">
+              <div aria-hidden="true" className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white px-4 text-sm text-gray-500 dark:bg-gray-900">Or continue with</span>
+              </div>
+            </div>
+
+            {/* 社交登录 */}
+            <div className="grid grid-cols-2 gap-4">
+              <button className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
+                <img
+                  alt="Google"
+                  className="h-5 w-5"
+                  src="https://www.svgrepo.com/show/475656/google-color.svg"
+                />
+                Google
+              </button>
+              <button className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
+                <img
+                  alt="Apple"
+                  className="h-5 w-5 dark:invert"
+                  src="https://www.svgrepo.com/show/508854/apple-black.svg"
+                />
+                Apple
+              </button>
+            </div>
+
+            {/* 底部注册链接 */}
+            <div className="mt-8 text-center pb-2">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Don't have an account?{" "}
+                <button onClick={onSignUp} className="font-bold text-[#4c7d7e] transition-colors hover:text-[#4c7d7e]/80 hover:underline decoration-[#F9C0B3] underline-offset-4 decoration-2">
+                  Sign up
+                </button>
+              </p>
+            </div>
+
         </div>
       </div>
     </div>
   );
 };
 
-export default Welcome;
+export default NutriGuideLogin;

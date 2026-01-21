@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ViewState, UserProfile, INITIAL_USER } from './types';
 import Welcome from './components/screens/Welcome';
+import NutriGuideSignUp from './components/screens/signup';
 import SetupGoals from './components/screens/SetupGoals';
 import SetupPersonal from './components/screens/SetupPersonal';
 import Dashboard from './components/screens/Dashboard';
@@ -21,7 +22,18 @@ export default function App() {
   const renderScreen = () => {
     switch (currentView) {
       case 'welcome':
-        return <Welcome onStart={() => setCurrentView('setup-goals')} />;
+        return (
+          <Welcome 
+            onStart={() => setCurrentView('setup-goals')} 
+            onSignUp={() => setCurrentView('signup')}
+          />
+        );
+      case 'signup':
+        return (
+          <NutriGuideSignUp 
+            onLogin={() => setCurrentView('welcome')} 
+          />
+        );
       case 'setup-goals':
         return (
           <SetupGoals 
@@ -51,7 +63,7 @@ export default function App() {
       case 'scanner':
         return <ScannerApp onClose={() => setCurrentView('dashboard')} />;
       default:
-        return <Welcome onStart={() => setCurrentView('setup-goals')} />;
+        return <Welcome onStart={() => setCurrentView('setup-goals')} onSignUp={() => setCurrentView('signup')} />;
     }
   };
 

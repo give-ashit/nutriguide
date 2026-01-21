@@ -1,5 +1,6 @@
 export type ViewState = 
   | 'welcome' 
+  | 'signup'
   | 'setup-goals' 
   | 'setup-personal' 
   | 'dashboard' 
