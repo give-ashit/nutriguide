@@ -57,6 +57,7 @@ export interface Database {
                     calorie_goal?: number;
                     updated_at?: string;
                 };
+                Relationships: [];
             };
             meal_entries: {
                 Row: {
@@ -100,6 +101,15 @@ export interface Database {
                     fats?: number | null;
                     image_url?: string | null;
                 };
+                Relationships: [
+                    {
+                        foreignKeyName: "meal_entries_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "users";
+                        referencedColumns: ["id"];
+                    }
+                ];
             };
             weekly_plans: {
                 Row: {
@@ -143,6 +153,15 @@ export interface Database {
                     image_url?: string | null;
                     is_completed?: boolean;
                 };
+                Relationships: [
+                    {
+                        foreignKeyName: "weekly_plans_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "users";
+                        referencedColumns: ["id"];
+                    }
+                ];
             };
             recipes: {
                 Row: {
@@ -180,6 +199,15 @@ export interface Database {
                     image_url?: string | null;
                     is_favorite?: boolean;
                 };
+                Relationships: [
+                    {
+                        foreignKeyName: "recipes_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "users";
+                        referencedColumns: ["id"];
+                    }
+                ];
             };
             hydration_logs: {
                 Row: {
@@ -206,7 +234,28 @@ export interface Database {
                     goal?: number;
                     updated_at?: string;
                 };
+                Relationships: [
+                    {
+                        foreignKeyName: "hydration_logs_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "users";
+                        referencedColumns: ["id"];
+                    }
+                ];
             };
+        };
+        Views: {
+            [_ in never]: never;
+        };
+        Functions: {
+            [_ in never]: never;
+        };
+        Enums: {
+            [_ in never]: never;
+        };
+        CompositeTypes: {
+            [_ in never]: never;
         };
     };
 }

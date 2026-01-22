@@ -57,7 +57,7 @@ const CATEGORIES = ["All", "Low Carb", "High Protein", "Vegan", "Quick Meal", "B
 
 // --- Helper Component: Tag Badge ---
 const TagBadge = ({ label, color }: { label: string, color: string }) => {
-  const styles: {[key: string]: string} = {
+  const styles: { [key: string]: string } = {
     green: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
     orange: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300",
     yellow: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300",
@@ -82,13 +82,13 @@ const Diary: React.FC = () => {
   const filteredRecipes = useMemo(() => {
     return recipes.filter(recipe => {
       const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            recipe.description.toLowerCase().includes(searchQuery.toLowerCase());
-     
+        recipe.description.toLowerCase().includes(searchQuery.toLowerCase());
+
       const matchesCategory = activeCategory === "All" ||
-                              recipe.tags.some(t => t.label === activeCategory) ||
-                              (activeCategory === "Low Carb" && recipe.tags.some(t => t.label === "Low Carb")) ||
-                              (activeCategory === "High Protein" && recipe.tags.some(t => t.label === "High Protein")) ||
-                              (activeCategory === "Vegan" && recipe.tags.some(t => t.label === "Vegan"));
+        recipe.tags.some(t => t.label === activeCategory) ||
+        (activeCategory === "Low Carb" && recipe.tags.some(t => t.label === "Low Carb")) ||
+        (activeCategory === "High Protein" && recipe.tags.some(t => t.label === "High Protein")) ||
+        (activeCategory === "Vegan" && recipe.tags.some(t => t.label === "Vegan"));
 
       return matchesSearch && matchesCategory;
     });
@@ -102,15 +102,15 @@ const Diary: React.FC = () => {
   };
 
   const handleOpenRecipe = (title: string) => {
-      // Placeholder for future internet functionality
-      alert(`Opening ${title} details...`);
+    // Placeholder for future internet functionality
+    alert(`Opening ${title} details...`);
   };
 
   return (
     <div className="bg-[#edf7f4] dark:bg-[#1f2e29] font-['Manrope'] text-[#121616] dark:text-white transition-colors duration-300 min-h-full">
-     
+
       <div className="relative w-full mx-auto flex flex-col">
-       
+
         {/* Header Section */}
         <header className="sticky top-0 z-30 bg-[#edf7f4]/95 dark:bg-[#1f2e29]/95 backdrop-blur-md px-6 pt-6 pb-4 border-b border-black/5 dark:border-white/5 transition-colors duration-200">
           <div className="flex items-center justify-between mb-6">
@@ -119,7 +119,7 @@ const Diary: React.FC = () => {
               <button className="size-10 rounded-full bg-white dark:bg-white/10 flex items-center justify-center shadow-sm hover:scale-105 transition-transform active:scale-95">
                 <span className="material-symbols-outlined text-xl">favorite</span>
               </button>
-              <button 
+              <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={`size-10 rounded-full flex items-center justify-center shadow-sm hover:scale-105 transition-all active:scale-95 ${showFilters ? 'bg-primary text-white' : 'bg-white dark:bg-white/10'}`}
               >
@@ -145,19 +145,19 @@ const Diary: React.FC = () => {
           {/* Categories (Horizontal Scroll) - Conditional Rendering */}
           <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showFilters ? 'max-h-16 opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
             <div className="overflow-x-auto no-scrollbar flex gap-3 pb-2 scroll-smooth">
-                {CATEGORIES.map(category => (
+              {CATEGORIES.map(category => (
                 <button
-                    key={category}
-                    onClick={() => setActiveCategory(category)}
-                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border
+                  key={category}
+                  onClick={() => setActiveCategory(category)}
+                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border
                     ${activeCategory === category
-                        ? 'bg-[#4d7f80] text-white shadow-md shadow-[#4d7f80]/30 border-transparent'
-                        : 'bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 border-black/5 hover:bg-gray-50 dark:hover:bg-white/10'
+                      ? 'bg-[#4d7f80] text-white shadow-md shadow-[#4d7f80]/30 border-transparent'
+                      : 'bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 border-black/5 hover:bg-gray-50 dark:hover:bg-white/10'
                     }`}
                 >
-                    {category}
+                  {category}
                 </button>
-                ))}
+              ))}
             </div>
           </div>
         </header>
@@ -165,7 +165,7 @@ const Diary: React.FC = () => {
         {/* Main Content */}
         <main className="flex-1 px-6 pb-6 pt-4">
           <div className="grid grid-cols-1 gap-6">
-           
+
             {filteredRecipes.length > 0 ? (
               filteredRecipes.map(recipe => (
                 <div key={recipe.id} className="group relative bg-white dark:bg-white/5 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-black/5 dark:border-white/5">
@@ -201,14 +201,14 @@ const Diary: React.FC = () => {
                       <span className="flex-shrink-0 text-sm font-bold text-[#4d7f80]">{recipe.calories} kcal</span>
                     </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{recipe.description}</p>
-                   
+
                     <div className="mt-4 flex items-center justify-between">
                       <div className="flex -space-x-0 gap-2">
                         {recipe.tags.map((tag, idx) => (
-                          <TagBadge key={idx} label={tag.label} color={tag.color} />
+                          <TagBadge key={idx} {...tag} />
                         ))}
                       </div>
-                      <button 
+                      <button
                         onClick={() => handleOpenRecipe(recipe.title)}
                         className="text-[#4d7f80] hover:bg-[#4d7f80]/10 p-1 rounded-lg transition-colors active:scale-95"
                       >

@@ -5,6 +5,9 @@
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
+    email TEXT UNIQUE,
+    password_hash TEXT,
+    avatar TEXT,
     weight DECIMAL NOT NULL,
     height DECIMAL NOT NULL,
     age INTEGER NOT NULL,
@@ -15,6 +18,11 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- 如果表已存在，添加缺失的列
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT UNIQUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT;
 
 -- 饮食日记表
 CREATE TABLE IF NOT EXISTS meal_entries (

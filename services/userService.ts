@@ -8,9 +8,14 @@ export async function createUser(userData: UserInsert): Promise<User | null> {
     // Calculate calorie goal based on user data
     const calorieGoal = calculateCalorieGoal(userData);
 
+    const insertData: UserInsert = {
+        ...userData,
+        calorie_goal: calorieGoal
+    };
+
     const { data, error } = await supabase
         .from('users')
-        .insert({ ...userData, calorie_goal: calorieGoal })
+        .insert(insertData)
         .select()
         .single();
 
